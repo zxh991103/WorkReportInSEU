@@ -298,5 +298,96 @@ group norm , 对于所有batch，我们将channel分为k个组，在每个组山
 \section{Assignment1}
 
 
+\subsection{KNN}
+双循环实现距离矩阵：
+\begin{lstlisting}[language=Python, caption=KNN双循环实现距离矩阵]
+    num_test = X.shape[0]
+    num_train = self.X_train.shape[0]
+    dists = np.zeros((num_test, num_train))
+    for i in range(num_test):
+        for j in range(num_train):
+            t1 = X[i]
+            t2 = self.X_train[j]
+            t = t1 - t2
+            t = t*t
+            t = t.sum()
+            t = t**0.5
+            dists[i][j] = t
+\end{lstlisting}
+单循环实现距离矩阵：
+\begin{lstlisting}[language=Python, caption=KNN单循环实现距离矩阵]
+    num_test = X.shape[0]
+    num_train = self.X_train.shape[0]
+    dists = np.zeros((num_test, num_train))
+    for i in range(num_test):
+        dists[i,:] = np.sum((X[i,:]-self.X_train)**2,axis = 1)
+\end{lstlisting}
+向量操作实现距离矩阵（矩阵下的完全平方公式）：
+\begin{lstlisting}[language=Python, caption=KNN向量操作实现距离矩阵]
+    M = np.dot(X, self.X_train.T)
+    nrow=M.shape[0]
+    ncol=M.shape[1]
+    te = np.diag(np.dot(X,X.T))
+    tr = np.diag(np.dot(self.X_train,self.X_train.T))
+    te= np.reshape(np.repeat(te,ncol),M.shape)
+    tr = np.reshape(np.repeat(tr, nrow), M.T.shape)
+    sq=-2 * M +te+tr.T
+    dists = np.sqrt(sq)
+\end{lstlisting}
+KNN预测：
+\begin{lstlisting}[language=Python, caption=KNN预测]
+    num_test = dists.shape[0]
+    y_pred = np.zeros(num_test)
+    labelnum = len(np.unique(self.y_train))
+    for i in range(num_test):
+        # A list of length k storing the labels of the k nearest neighbors to
+        # the ith test point.
+        closest_y = []
+        closest_y = np.argsort(dists[i,:])[:k]
+        t = np.zeros(labelnum,dtype=int)
+        for j in closest_y:
+            t[self.y_train[j]]+=1
+        y_pred[i] = t.argmax()
+\end{lstlisting}
+
+\subsection{SVM}
+\begin{lstlisting}[language=Python, caption=Python example]
+
+\end{lstlisting}
+计算SVM loss、dW(naive):
+\begin{lstlisting}[language=Python, caption=SVM(naive)]
+    dW = np.zeros(W.shape)  # initialize the gradient as zero
+
+    # compute the loss and the gradient
+    num_classes = W.shape[1]
+    num_train = X.shape[0]
+    loss = 0.0
+    for i in range(num_train):
+        scores = X[i].dot(W)
+        correct_class_score = scores[y[i]]
+        for j in range(num_classes):
+            if j == y[i]:
+                continue
+            margin = scores[j] - correct_class_score + 1  # note delta = 1
+            if margin > 0:
+                loss += margin
+    loss /= num_train
+    
+    # Add regularization to the loss.
+    loss += reg * np.sum(W * W)
+
+    for i in range(num_train):
+        scores = X[i].dot(W)
+        correct_class_score = scores[y[i]]
+        for j in range(num_classes):
+            if j == y[i]:
+                continue
+            margin = scores[j] - correct_class_score + 1  # note delta = 1
+            if margin > 0:
+                dW[:,j] += X[i]
+                dW[:,y[i]] -= X[i]
+    dW /= num_train 
+    dW += reg * W * 2 
+\end{lstlisting}
 
 \end{document}
