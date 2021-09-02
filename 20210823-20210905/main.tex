@@ -1,0 +1,302 @@
+\documentclass[a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+% \usepackage[fontset=ubuntu]{ctex}
+\usepackage{ctex}
+\usepackage[ruled,linesnumbered]{algorithm2e}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{verbatim}
+\usepackage{bigints}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{titling}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage[colorlinks,linkcolor=red]{hyperref}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{8.23-9.5 周报}
+
+\author{赵晓辉}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{写在前面}
+
+这个双周主要完成了cs231n课程的Lecture 1至Lecture 6,主要内容包括距离函数、KNN、SVM、损失函数及优化、BP算法、CNN架构、非线性激活函数以及神经网络的参数优化等，并完成cs231n assignment1。课程概要笔记及assignment将在\url{https://github.com/zxh991103/cs231NOTE}持续跟踪。
+
+
+
+
+\section{Lec 1-6课程概要}
+\subsection{距离函数}
+
+$L_1$ Distance
+$$d_1(I_1,I_2)=\sum_p|I^p_1-I^p_2|$$
+
+$L_2$ Distance
+$$d_2(I_1,I_2) = \sqrt{\sum_p(I^p_1-I^p_2)^2}$$
+
+\subsection{KNN}
+
+计算测试样本与所有训练集样本之间的距离值，并根据K值投票选举出最相似的标签。
+
+\subsection{SVM}
+
+计算能够划分训练集样本且距离最大的超平面。
+$$w\cdot x + b=0$$
+
+\subsection{损失函数}
+损失函数评估模型预测值与模型真实值之间的差异性，我们要将其最小化。
+对于给定的训练集${(x_i,y_i)}^N_{i=1}$，我们有损失函数：
+$$L =\frac{1}{N} \sum_i L_i(f(x_i,W),y_i)$$
+
+对于Multi-SVM，我们有损失函数，即hinge loss：
+$$s=f(x_i,W)$$
+$$L_i=\sum_{j\neq y_i}max(0,s_j-s_{y_i}+1)$$
+
+对于softmax loss:
+$$L_i = -log (\frac{e^{s_{y_i}}}{\sum_j e^{s_{j}}})$$
+
+\subsection{正则化}
+
+根据奥卡姆剃刀原则，模型越简单越符合实际，所以我们将正则惩罚项
+加在损失函数上。
+
+$$L =\frac{1}{N} \sum_i L_i(f(x_i,W),y_i)+λ R(W)$$
+
+L1
+$$R(W)=\sum_k \sum_l |W_{k,l}|$$
+
+L2
+$$R(W)=\sum_k \sum_l W_{k,l}^2$$
+
+Elastic
+$$R(W)=\sum_k \sum_l \beta W_{k,l}^2+|W_{k,l}|$$
+\subsection{BP算法}
+链式法则：
+$$\frac{\partial f}{\partial y}=\frac{\partial f}{\partial q}\frac{\partial q}{\partial y}$$
+
+故在计算损失函数对于参数的梯度值时，我们应当将本地梯度值与上游回传梯度值相乘。
+
+此时，我们也可以发现Relu函数，即max gate中只有前向传播计算中的正值能影响下游。
+
+A vectorized example：
+$$f(x,W) =||W ⋅ x||^2 = \sum_{i=1}^n(W ⋅ x)_i^2$$
+$$q = W \cdot x$$
+$$\nabla_W f = 2q \cdot x^T$$
+
+
+\subsection{NN}
+假设我们将神经网络的计算图表示为：
+$$f = Softmax(W_2 Relu(W_1 x))$$
+
+神经元A拥有$W_1$，能够具有识别出来100种特征的功能，比如识别出马的左脸或者右脸、车头或者车位。
+而神经元B拥有$W_2$,其功能就在于将马的左脸或右脸合并为马的特征，将车头或车尾合并成车的特征，从而进行识别。
+
+\subsection{CNN}
+
+卷积层：
+
+假设有32*32*3的图片，卷积核w 5*5*3 ，以及偏置b，
+卷积后我们获得28*28*1的矩阵，其中1时卷积核的数量。
+卷积公式为（每位相乘再求和）：
+$$
+f[x,y] * g[x,y] = \sum_{n_1=-\infty}^{\infty } \sum_{n_2=-\infty}^{\infty } f[x,y] * g[x-n_1,y-n_2]
+$$
+
+步长（stride）：
+
+假设我们有7*7的输入，3*3的卷积核，2的步长，最后的输出为3*3。
+此时outputsize = $\frac{(N-F)}{stride}+1$
+
+填充（Pad）：
+
+图像四周补充0，来防止在深层卷积时张量过小。此时，outputsize = $\frac{(N-F+2P)}{stride}+1$。
+
+Example:
+
+input volume 32*32*3,10 5*5 filters (include 3 depth), stride 1 ,pad 2 ,wo have 760 parameters ( 10 *( 5 * 5 *3 +1 bias)=760)
+
+pooling layer:
+相当于下采样。
+
+maxpooling:
+
+一般，每一个池化filter具有和步长相同的大小以避免overlap.
+
+例如，
+$$\begin{matrix}  
+    1 & 1 & 2 & 4 \\
+    5 & 6 & 7 & 8 \\
+    3 & 2 & 1 & 0 \\
+    1 & 2 & 3 & 4
+\end{matrix}$$
+
+我们使用2*2的filter和2的stride,maxpooling后变为：
+$$\begin{matrix}  
+    6 & 8 \\
+    3 & 4  \\
+   
+\end{matrix}$$
+
+
+
+\subsection{激活函数}
+若全部线性连接则等同于一个线性连接，所以网络中需要非线性的激活函数变换。
+
+sigmod 
+
+$$
+\sigma(x)=\frac{1}{1+e^{-x}}
+$$
+
+tanh
+
+$$tanh(x)$$
+
+Relu
+
+$$max(0,x)$$
+
+LeakyRelu
+$$max(0.1x,x)$$
+
+Maxout
+$$
+\max \left(w_{1}^{T} x+b_{1}, w_{2}^{T} x+b_{2}\right)
+$$
+
+Elu
+$$
+\begin{cases}
+x & x \geq 0 \\ 
+\alpha\left(e^{x}-1\right) & x<0
+\end{cases}
+$$
+
+SELU
+$$
+f(x)= \begin{cases}\lambda x & \text { if } x>0 \\ \lambda \alpha\left(e^{x}-1\right) & \text { otherwise }\end{cases}
+$$
+
+
+softmax的问题：
+\begin{itemize}
+    \item x过大或过小，本地梯度接近0，使得与上游梯度乘积也接近于0，更新缓慢。
+    \item x的值恒正或恒负，本地梯度总是大于0的，造成w的移动时锯齿状的，接近最优点放缓。
+    
+\end{itemize}
+
+relu的问题：
+\begin{itemize}
+    \item 若$w\cdot x+b$总是负的，则本地梯度为0，造成参数不更新。
+    
+\end{itemize}
+
+
+\subsection{数据处理}
+\begin{lstlisting}[language=Python, caption=normalization]
+# ZERO-CENTER
+X -= np.mean(X,axis = 0)
+# normalize
+X /= np.std(X,axis = 0)
+\end{lstlisting}
+
+\subsection{参数初始化}
+Naive:为参数初始化小随机数。但是随着网络深度的增加，本地梯度与上游梯度相乘之后接近零，学习十分缓慢。
+
+Xavier：
+\begin{lstlisting}[language=Python, caption=Xavier]
+W = np.random.randn(dim_in,dim_out)/np.sqrt(dim_in)
+\end{lstlisting}
+
+原因：
+
+we want Var(y) = Var($x_i$) , and we have 
+$$y = \sum_{i=1}^{Din} x_i w_i$$
+
+and we assume that  every x has same var. so we have 
+
+$$
+var(y) = Din \times var(x) \times var(w_i)
+$$
+
+and obviously initial $w_i ~ N(0,1)$ , we make $\frac{w_i}{\sqrt{Din}}$ to achieve the var is $\frac{1}{Din}$
+
+Kaiming/MSRA:
+\begin{lstlisting}[language=Python, caption=MSRA]
+    W = np.random.randn(dim_in,dim_out)*np.sqrt(2/dim_in)
+\end{lstlisting}
+
+\subsection{Batch Normalization}
+
+we have the input  x like N$\times$D 
+$$
+\widehat{x}^{(k)}=\frac{x^{(k)}-\mathrm{E}\left[x^{(k)}\right]}{\sqrt{\operatorname{Var}\left[x^{(k)}\right]}}
+$$
+
+so that we have:
+$$
+\mu_{j}=\frac{1}{N} \sum_{i=1}^{N} x_{i, j}
+$$
+$$
+\sigma_{j}^{2}=\frac{1}{N} \sum_{i=1}^{N}\left(x_{i, j}-\mu_{j}\right)^{2}
+$$
+$$
+\hat{x}_{i, j}=\frac{x_{i, j}-\mu_{j}}{\sqrt{\sigma_{j}^{2}+\varepsilon}}
+$$
+
+
+the net is supposed to learn $\gamma \in R^D$  and  $\beta\in R^D$ 
+$$
+y_{i, j}=\gamma_{j} \hat{x}_{i, j}+\beta_{j}
+$$
+
+BN 层经常用于全连接或卷积层后。
+
+\subsection{Norm For Conv.}
+
+batch norm , 对于每一个batch中的每个channel取平均得到 (1× 1 × C)
+
+layer norm ,对于所有的batch我们取一个平均的图片 (H × W× C)
+
+instance norm ,对于所有的batch我们将取一个平均的单通道图片 (H × W ×1)
+
+group norm , 对于所有batch，我们将channel分为k个组，在每个组山上取平均值得到  (H × W × k)
+
+\section{Assignment1}
+
+
+
+\end{document}
