@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021/W32TeX) (preloaded format=xelatex 2021.8.23)  3 SEP 2021 13:07
+This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021/W32TeX) (preloaded format=xelatex 2021.8.23)  3 SEP 2021 13:12
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -854,7 +854,7 @@ Package rerunfilecheck Warning: File `main.out' has changed.
 
 Package rerunfilecheck Info: Checksums for `main.out':
 (rerunfilecheck)             Before: <no file>
-(rerunfilecheck)             After:  1742820C787FD09A97DD0A475CC03E3C;1951.
+(rerunfilecheck)             After:  C5214B9D318AD46181F0B6CB5376CD06;1815.
  ) 
 Here is how much of TeX's memory you used:
  27167 strings out of 476919
