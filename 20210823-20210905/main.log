@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021/W32TeX) (preloaded format=xelatex 2021.8.23)  3 SEP 2021 11:42
+This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021/W32TeX) (preloaded format=xelatex 2021.8.23)  3 SEP 2021 13:07
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -842,7 +842,7 @@ Missing character: There is no ⋅ (U+22C5) in font [lmroman10-regular]:mapping=
 Missing character: There is no ⋅ (U+22C5) in font [lmroman10-regular]:mapping=tex-text;!
  [2] [3] [4] (c:/texlive/2021/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2020/03/24 1.8d listings language file
-) [5] [6] [7] [8] [9] [10] (./main.aux)
+) [5] [6] [7] [8] [9] [10] [11] [12] [13] [14] [15] (./main.aux)
 
 LaTeX Font Warning: Size substitutions with differences
 (Font)              up to 0.41063pt have occurred.
@@ -854,15 +854,15 @@ Package rerunfilecheck Warning: File `main.out' has changed.
 
 Package rerunfilecheck Info: Checksums for `main.out':
 (rerunfilecheck)             Before: <no file>
-(rerunfilecheck)             After:  3D58316390835EA3FDE445D114D6B930;1724.
+(rerunfilecheck)             After:  1742820C787FD09A97DD0A475CC03E3C;1951.
  ) 
 Here is how much of TeX's memory you used:
- 27108 strings out of 476919
- 562336 string characters out of 5825424
+ 27167 strings out of 476919
+ 563006 string characters out of 5825424
  1404877 words of memory out of 5000000
- 46600 multiletter control sequences out of 15000+600000
+ 46659 multiletter control sequences out of 15000+600000
  409026 words of font info for 75 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 102i,9n,104p,466b,1888s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 102i,9n,104p,466b,1890s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on main.pdf (10 pages).
+Output written on main.pdf (15 pages).
