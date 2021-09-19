@@ -14,7 +14,7 @@
 \usepackage{float}
 \usepackage{titling}
 \usepackage[colorinlistoftodos]{todonotes}
-\usepackage[colorlinks,linkcolor=red]{hyperref}
+\usepackage[colorlinks,linkcolor=blue]{hyperref}
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -54,6 +54,7 @@
 \section{写在前面}
 
 这个双周主要完成了cs231n课程的Lecture 1至Lecture 6,主要内容包括距离函数、KNN、SVM、损失函数及优化、BP算法、CNN架构、非线性激活函数以及神经网络的参数优化等，并完成cs231n assignment1。课程概要笔记及assignment将在\url{https://github.com/zxh991103/cs231NOTE}持续跟踪。
+此外使用torch，初步学习和实现了GAT算法。
 
 
 
@@ -296,8 +297,6 @@ instance norm ,对于所有的batch我们将取一个平均的单通道图片 (H
 group norm , 对于所有batch，我们将channel分为k个组，在每个组山上取平均值得到  (H × W × k)
 
 \section{Assignment1}
-
-
 \subsection{KNN}
 双循环实现距离矩阵：
 \begin{lstlisting}[language=Python, caption=KNN双循环实现距离矩阵]
@@ -700,5 +699,112 @@ FC Net grid search:
                     best_acc = val_acc
                     best_model = net
 \end{lstlisting}
+\section{GAT}
+\subsection{theory}
+对于一个图，我们将其表示为邻接矩阵$adj \in R^{N \times N}$,每个节点i都有其特征表示向量$h_i \in R^D$,在单个attention中，
+设$W \in R^{in \times out}$为共有的可学习的参数，对于直接连接在节点向量上的attention层中in = D，$\alpha \in R^{2\cdot out}$为注意力系数向量
+也是可学习的，在前向计算中，隐藏层的向量由以下公式计算：
+$$
+\begin{aligned}
+\alpha_{i j} &=\frac{\exp \left(\operatorname{LeakyReLU}\left(\overrightarrow{\mathbf{a}}^{T}\left[\mathbf{W} \vec{h}_{i} \| \mathbf{W} \vec{h}_{j}\right]\right)\right)}{\sum_{k \in \mathcal{N}_{i}} \exp \left(\operatorname{LeakyReLU}\left(\overrightarrow{\mathbf{a}}^{T}\left[\mathbf{W} \vec{h}_{i} \| \mathbf{W} \vec{h}_{k}\right]\right)\right)} \\
+\vec{h}_{i}^{\prime} &=\sigma\left(\sum_{j \in \mathcal{N}_{i}} \alpha_{i j} \mathbf{W} \vec{h}_{j}\right)
+\end{aligned}
+$$
+对于多头attention，我们只需设立多个$W和\alpha$,将计算出的每个节点的隐藏层向量拼接起来即可。
+
+对于此多头attention层是最后一层，就不对其做拼接操作，而是直接对K（头数）个隐藏层向量齐求均值
+\subsection{codes}
+GAT的搭建（based torch）：
+\begin{lstlisting}[language=Python, caption=GAT]
+    class GAT(nn.Module):
+    def __init__(self, nfeat, nhid, nclass, dropout, alpha, nheads):
+        """Dense version of GAT."""
+        super(GAT, self).__init__()
+        self.dropout = dropout
+
+        self.attentions = [GraphAttentionLayer(nfeat, nhid, dropout=dropout, alpha=alpha, concat=True) for _ in range(nheads)]
+        for i, attention in enumerate(self.attentions):
+            self.add_module('attention_{}'.format(i), attention)
+
+        self.out_att = GraphAttentionLayer(nhid * nheads, nclass, dropout=dropout, alpha=alpha, concat=False)  # 第二层(最后一层)的attention layer
+
+    def forward(self, x, adj):
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = torch.cat([att(x, adj) for att in self.attentions], dim=1)  # cat hidden vector of every node
+        x = F.dropout(x, self.dropout, training=self.training)
+        x = F.elu(self.out_att(x, adj))   # final attention
+        return F.log_softmax(x, dim=1)
+\end{lstlisting}
+\begin{lstlisting}[language=Python, caption=Attention layer]
+    class GraphAttentionLayer(nn.Module):
+    """
+    Simple GAT layer, similar to https://arxiv.org/abs/1710.10903
+    """
+    def __init__(self, in_features, out_features, dropout, alpha, concat=True):
+        super(GraphAttentionLayer, self).__init__()
+        self.dropout = dropout
+        self.in_features = in_features
+        self.out_features = out_features
+        self.alpha = alpha
+        self.concat = concat
+
+        self.W = nn.Parameter(torch.empty(size=(in_features, out_features)))
+        nn.init.xavier_uniform_(self.W.data, gain=1.414)
+        self.a = nn.Parameter(torch.empty(size=(2*out_features, 1)))  # concat(V,NeigV)
+        nn.init.xavier_uniform_(self.a.data, gain=1.414)
+
+        self.leakyrelu = nn.LeakyReLU(self.alpha)
+
+    def forward(self, h, adj):
+        Wh = torch.mm(h, self.W) # h.shape: (N, in_features), Wh.shape: (N, out_features)
+        a_input = self._prepare_attentional_mechanism_input(Wh)  # 每一个节点和所有节点，特征。(Vall, Vall, feature)
+        e = self.leakyrelu(torch.matmul(a_input, self.a).squeeze(2))
+        # 之前计算的是一个节点和所有节点的attention，其实需要的是连接的节点的attention系数
+        zero_vec = -9e15*torch.ones_like(e) # 
+        attention = torch.where(adj > 0, e, zero_vec)    # 无边相连即为-\inf,有边相连，设置值为\alpha_{i,j}将邻接矩阵中小于0的变成负无穷 e^-\inf = 0
+        attention = F.softmax(attention, dim=1)  # 按行求softmax。 将系数归一，sum(axis=1) == 1
+        attention = F.dropout(attention, self.dropout, training=self.training)
+        h_prime = torch.matmul(attention, Wh)   # 聚合邻居函数，加权平均
+
+        if self.concat:
+            return F.elu(h_prime) 
+        else:
+            return h_prime
+
+    def _prepare_attentional_mechanism_input(self, Wh): # 计算Wh_i || Wh_j 
+        N = Wh.size()[0]
+        Wh_repeated_in_chunks = Wh.repeat_interleave(N, dim=0)
+        Wh_repeated_alternating = Wh.repeat(N, 1)
+        all_combinations_matrix = torch.cat([Wh_repeated_in_chunks, Wh_repeated_alternating], dim=1)
+        return all_combinations_matrix.view(N, N, 2 * self.out_features)
+\end{lstlisting}
+对于训练过程，我们可以传入训练集的图结构和节点向量矩阵，在测试的时候将邻接矩阵变幻，通过mask获得测试节点的label。
+\begin{lstlisting}[language=Python, caption=train \& test]
+    model.train()
+    optimizer.zero_grad()
+    
+    features1 = features[0:1000]
+    adj1 = adj[0:1000]
+    adj1 = adj1.T
+    adj1 = adj1[0:1000]
+    adj1 = adj1.T
+    labels1 = labels[0:1000]
+    # print("feature1:",features1.shape)
+    # print("adj1:",adj1.shape)
+    output = model(features1, adj1)  # GAT模块
+    # loss_train = F.nll_loss(output[idx_train], labels[idx_train])
+    # acc_train = accuracy(output[idx_train], labels[idx_train])
+
+    loss_train =  F.nll_loss(output, labels1)
+    acc_train = accuracy(output, labels1)
+
+
+    # test
+    model.eval()
+    output = model(features, adj)
+    loss_test = F.nll_loss(output[idx_test], labels[idx_test])
+    acc_test = accuracy(output[idx_test], labels[idx_test])
+\end{lstlisting}
+
 
 \end{document}

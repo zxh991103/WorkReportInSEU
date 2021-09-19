@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021/W32TeX) (preloaded format=xelatex 2021.8.23)  19 SEP 2021 14:31
+This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021/W32TeX) (preloaded format=xelatex 2021.8.23)  19 SEP 2021 14:30
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -836,15 +836,7 @@ LaTeX Font Warning: Font shape `OMX/cmex/m/n' in size <10.53937> not available
 
 [1
 
-]
-Missing character: There is no λ ("3BB) in font cmmi10!
-Missing character: There is no ⋅ (U+22C5) in font [lmroman10-regular]:mapping=tex-text;!
-Missing character: There is no ⋅ (U+22C5) in font [lmroman10-regular]:mapping=tex-text;!
- [2] [3] [4] (c:/texlive/2021/texmf-dist/tex/latex/listings/lstlang1.sty
-File: lstlang1.sty 2020/03/24 1.8d listings language file
-) [5] [6] [7] [8] [9] [10] [11] [12] [13] [14]
-Missing character: There is no 和 (U+548C) in font [lmroman10-regular]:mapping=tex-text;!
- [15] [16] [17] (./main.aux)
+] (./main.aux)
 
 LaTeX Font Warning: Size substitutions with differences
 (Font)              up to 0.41063pt have occurred.
@@ -856,15 +848,15 @@ Package rerunfilecheck Warning: File `main.out' has changed.
 
 Package rerunfilecheck Info: Checksums for `main.out':
 (rerunfilecheck)             Before: <no file>
-(rerunfilecheck)             After:  1072770E4D6C79096660095852E80425;2045.
+(rerunfilecheck)             After:  82B63D4F6292E49DB8DB0ACD0373E252;188.
  ) 
 Here is how much of TeX's memory you used:
- 27264 strings out of 476919
- 565585 string characters out of 5825424
- 1488880 words of memory out of 5000000
- 46751 multiletter control sequences out of 15000+600000
- 409058 words of font info for 79 fonts, out of 8000000 for 9000
+ 26801 strings out of 476919
+ 555989 string characters out of 5825424
+ 898720 words of memory out of 5000000
+ 46302 multiletter control sequences out of 15000+600000
+ 408994 words of font info for 71 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 102i,22n,104p,467b,1896s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 102i,6n,104p,467b,340s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on main.pdf (17 pages).
+Output written on main.pdf (1 page).
